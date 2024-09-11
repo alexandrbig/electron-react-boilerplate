@@ -1,9 +1,10 @@
 import {
   app,
-  Menu,
-  shell,
   BrowserWindow,
+  dialog,
+  Menu,
   MenuItemConstructorOptions,
+  shell,
 } from 'electron';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
@@ -13,6 +14,31 @@ interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
 
 export default class MenuBuilder {
   mainWindow: BrowserWindow;
+
+  testTemplate = {
+    label: 'Test Menu',
+    submenu: [
+      {
+        label: 'Test',
+        id: 'test',
+        click: async () => {
+          const { response } = await dialog.showMessageBox({
+            title: 'Async dialog',
+            message: 'Async dialog test',
+            cancelId: 1,
+            buttons: ['Yes', 'No'],
+          });
+
+          if (response === 0) {
+            dialog.showMessageBoxSync({
+              title: 'OK',
+              message: "You chose 'Yes'",
+            });
+          }
+        },
+      },
+    ],
+  };
 
   constructor(mainWindow: BrowserWindow) {
     this.mainWindow = mainWindow;
@@ -113,8 +139,15 @@ export default class MenuBuilder {
         {
           label: 'Toggle Full Screen',
           accelerator: 'Ctrl+Command+F',
-          click: () => {
-            this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
+          click: async () => {
+            const { response } = await dialog.showMessageBox({
+              title: 'Async dialog',
+              message: 'Async dialog test',
+              cancelId: 1,
+              buttons: ['Yes', 'No'],
+            });
+            if (response == 0)
+              this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
           },
         },
         {
@@ -189,7 +222,14 @@ export default class MenuBuilder {
         ? subMenuViewDev
         : subMenuViewProd;
 
-    return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow, subMenuHelp];
+    return [
+      subMenuAbout,
+      subMenuEdit,
+      subMenuView,
+      subMenuWindow,
+      subMenuHelp,
+      this.testTemplate,
+    ];
   }
 
   buildDefaultTemplate() {
